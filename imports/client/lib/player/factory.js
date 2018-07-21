@@ -2,6 +2,8 @@
 
 import ToneJS from 'tone';
 
+import { PLAYER_POLYPHONY } from './constants';
+
 const createPart = (track, { synth, Tone }) => {
     const part = new Tone.Part((time, note) => {
         // use the midi events / notes to play the synth
@@ -23,7 +25,7 @@ const createPartsFromTracks = ({ tracks }, dependencies) =>
 
 // Dependency Injection for easy testability
 const makePlayer = (mid, Tone = ToneJS) => {
-    const synth = new Tone.PolySynth(10).toMaster();
+    const synth = new Tone.PolySynth(PLAYER_POLYPHONY).toMaster();
 
     const parts = createPartsFromTracks(mid, { synth, Tone });
 
