@@ -1,7 +1,10 @@
 import React from 'react';
 
-import Player from './pages/Player';
+import StartMobile from '/imports/client/lib/StartMobile';
+import Router from './routing/Router';
 
-const App = () => <Player />;
+StartMobile();
+
+const App = () => <Router />;
 
 export default App;

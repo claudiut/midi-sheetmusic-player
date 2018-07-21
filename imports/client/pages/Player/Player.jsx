@@ -1,5 +1,33 @@
 import React from 'react';
+import Tone from 'tone';
 
-const Player = () => 'aaaaasaa';
+import PlayerContainer from './PlayerContainer';
 
-export default Player;
+const Player = ({ handlePlay, handleStop, parts, toggleMutePart }) => (
+    <React.Fragment>
+        <div>
+            {/* these should be my button component, to handle touch also */}
+            <button type="button" onClick={handlePlay}>
+                Play
+            </button>
+            <button type="button" onClick={handleStop}>
+                Stop
+            </button>
+            <div id="progress-bar" />
+        </div>
+
+        <div>
+            {parts.map((part, index) => (
+                <button
+                    key={index}
+                    type="button"
+                    onClick={() => toggleMutePart(part)}
+                >
+                    {index}
+                </button>
+            ))}
+        </div>
+    </React.Fragment>
+);
+
+export default PlayerContainer(Player);

@@ -11,8 +11,12 @@
         "eslint-plugin-promise": "^3.6.0",
         "eslint-plugin-standard": "^3.0.1",
         "meteor-node-stubs": "^0.4.1",
+        "midiconvert": "^0.4.7",
         "react": "^16.4.1",
-        "react-dom": "^16.4.1"
+        "react-dom": "^16.4.1",
+        "react-router-dom": "^4.3.1",
+        "recompose": "^0.27.1",
+        "tone": "^0.12.80"
     },
     "devDependencies": {
         "eslint": "^4.19.1",
