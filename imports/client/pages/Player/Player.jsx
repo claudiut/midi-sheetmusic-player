@@ -23,7 +23,7 @@ const Player = ({ handlePlay, handleStop, parts, toggleMutePart }) => (
                     type="button"
                     onClick={() => toggleMutePart(part)}
                 >
-                    {index}
+                    {index + 1}
                 </button>
             ))}
         </div>

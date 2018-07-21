@@ -33,11 +33,14 @@ const withPlayerLifecycle = lifecycle({
     },
 });
 
-const withPlayerProps = withProps(({ player }) => ({
-    handlePlay: () => player.play(),
-    handleStop: () => player.stop(),
-    parts: player.getParts(),
-}));
+const withPlayerProps = withProps(
+    ({ player: { play, stop, getParts, toggleMutePart } }) => ({
+        handlePlay: play,
+        handleStop: stop,
+        parts: getParts(),
+        toggleMutePart,
+    }),
+);
 
 const renderWhenPlayerLoaded = branch(
     ({ player }) => !!player,
