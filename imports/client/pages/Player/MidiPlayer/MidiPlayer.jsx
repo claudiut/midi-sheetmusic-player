@@ -1,7 +1,6 @@
 import React from 'react';
-import Tone from 'tone';
 
-import PlayerContainer from './PlayerContainer';
+import MidiPlayerContainer from './MidiPlayerContainer';
 
 const Player = ({ handlePlay, handleStop, parts, toggleMutePart }) => (
     <React.Fragment>
@@ -30,4 +29,4 @@ const Player = ({ handlePlay, handleStop, parts, toggleMutePart }) => (
     </React.Fragment>
 );
 
-export default PlayerContainer(Player);
+export default MidiPlayerContainer(Player);

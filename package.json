@@ -16,7 +16,8 @@
         "react-dom": "^16.4.1",
         "react-router-dom": "^4.3.1",
         "recompose": "^0.27.1",
-        "tone": "^0.12.80"
+        "tone": "^0.12.80",
+        "verovio-dev": "^2.0.0-39"
     },
     "devDependencies": {
         "eslint": "^4.19.1",
