@@ -16,11 +16,10 @@ export default () => {
         document.body.appendChild(iOSTapper);
         // alert('CONTEXT' + Tone.context.toString());
         new StartAudioContext(Tone.context, iOSTapper).then(() => {
-            alert('A');
             iOSTapper.remove();
-            window.parent.postMessage('ready', '*');
+            // window.parent.postMessage('ready', '*');
         });
     } else {
-        window.parent.postMessage('ready', '*');
+        // window.parent.postMessage('ready', '*');
     }
 };
