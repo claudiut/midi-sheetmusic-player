@@ -7,8 +7,8 @@ import {
     branch,
 } from 'recompose';
 
-const verovio = require('/vendor/verovio.js');
-const verovioToolkit = new verovio.toolkit();
+// const verovio = require('/vendor/verovio.js');
+// const verovioToolkit = new verovio.toolkit();
 
 const withSheetMusicProps = branch(
     ({ musicXmlData }) => !!musicXmlData,
@@ -36,5 +36,5 @@ const loadSheetMusicFile = lifecycle({
 
 export default compose(
     loadSheetMusicFile,
-    withSheetMusicProps,
+    // withSheetMusicProps,
 );

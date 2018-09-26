@@ -6,7 +6,6 @@ import { PLAYER_POLYPHONY } from './constants';
 
 const createPart = (track, { synth, Tone }) => {
     const part = new Tone.Part((time, note) => {
-        console.log('>>>', time, note);
         // use the midi events / notes to play the synth
         synth.triggerAttackRelease(
             Tone.Frequency(note.name).transpose(0),

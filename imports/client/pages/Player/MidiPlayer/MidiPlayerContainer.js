@@ -18,14 +18,15 @@ const withPlayerState = withStateHandlers(
     },
 );
 
-const withPlayerLifecycle = lifecycle({
+const loadFileIntoPlayer = lifecycle({
     componentDidMount() {
         const fileUrl = getQueryString('file');
-
+        console.log('fileUrl', fileUrl);
         if (fileUrl) {
             const { setPlayer } = this.props;
 
             MidiConvert.load(fileUrl).then(mid => {
+                console.log('mid loaded', mid);
                 const player = makePlayer(mid);
                 setPlayer(player);
             });
@@ -50,6 +51,6 @@ const renderWhenPlayerLoaded = branch(
 
 export default compose(
     withPlayerState,
-    withPlayerLifecycle,
+    loadFileIntoPlayer,
     renderWhenPlayerLoaded,
 );
