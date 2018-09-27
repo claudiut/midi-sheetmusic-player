@@ -31,19 +31,21 @@ const makePlayer = (mid, Tone = ToneJS) => {
 
     return {
         play: () => {
-            if (Tone.Transport.state === 'started') {
-                return Tone.Transport.pause();
-            }
-
             Tone.Transport.start('+0', Tone.Transport.position);
+        },
+
+        pause: () => {
+            Tone.Transport.pause();
         },
 
         stop: () => {
             Tone.Transport.stop();
         },
 
+        isPlaying: () => Tone.Transport.state === 'started',
+
         // what is the first track and why is always kind of empty?
-        getParts: () => parts,
+        getParts: () => parts.slice(1),
 
         toggleMutePart: part => {
             part.mute = !part.mute;

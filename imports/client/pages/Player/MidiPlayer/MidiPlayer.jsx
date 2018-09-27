@@ -2,12 +2,18 @@ import React from 'react';
 
 import MidiPlayerContainer from './MidiPlayerContainer';
 
-const Player = ({ handlePlay, handleStop, parts, toggleMutePart }) => (
+const Player = ({
+    handlePlay,
+    handleStop,
+    parts,
+    toggleMutePart,
+    playButtonLabel,
+}) => (
     <React.Fragment>
         <div>
             {/* these should be my button component, to handle touch also */}
             <button type="button" onClick={handlePlay}>
-                Play
+                {playButtonLabel}
             </button>
             <button type="button" onClick={handleStop}>
                 Stop
@@ -16,13 +22,14 @@ const Player = ({ handlePlay, handleStop, parts, toggleMutePart }) => (
         </div>
 
         <div>
-            {parts.map((part, index) => (
+            {parts.map(({ label, isMuted, handleToggleMutePart }, index) => (
                 <button
                     key={index}
                     type="button"
-                    onClick={() => toggleMutePart(part)}
+                    onClick={handleToggleMutePart}
+                    style={{ fontWeight: isMuted ? 'normal' : 'bold' }}
                 >
-                    {index + 1}
+                    {label}
                 </button>
             ))}
         </div>
