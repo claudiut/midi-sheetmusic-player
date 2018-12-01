@@ -1,6 +1,8 @@
 import Tone from 'tone';
 import StartAudioContext from '/imports/vendor/StartAudioContext';
 
+window.Tone = Tone;
+
 export default () => {
     // send the ready message to the parent
     const isIOS =

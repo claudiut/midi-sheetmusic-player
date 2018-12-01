@@ -34,7 +34,6 @@ const loadSheetMusicFile = lifecycle({
     },
 });
 
-export default compose(
-    loadSheetMusicFile,
-    // withSheetMusicProps,
-);
+export default compose();
+// loadSheetMusicFile,
+// withSheetMusicProps,
