@@ -9,7 +9,7 @@ class PlayerEmitter extends EventEmitter {}
 // used for custom events, that is, events not already handled ToneJS library
 const playerEmitter = new PlayerEmitter();
 
-const createPart = (track, { synth, Tone }) => {
+const createPart = (track, trackIndex, { synth, Tone }) => {
     const part = new Tone.Part((time, note) => {
         // use the midi events / notes to play the synth
         synth.triggerAttackRelease(
@@ -26,7 +26,7 @@ const createPart = (track, { synth, Tone }) => {
 };
 
 const createPartsFromTracks = ({ tracks }, dependencies) =>
-    tracks.map(track => createPart(track, dependencies));
+    tracks.map((track, index) => createPart(track, index, dependencies));
 
 const getNonEmptyParts = parts => parts.filter(({ length }) => length);
 
@@ -55,8 +55,6 @@ const makePlayer = (mid, Tone = ToneJS) => {
         if (songFinished) {
             stop();
         }
-
-        console.log(Tone.Transport.state, Tone.Transport.seconds, mid.duration);
     };
 
     let getProgressEmmiterId;
@@ -65,7 +63,6 @@ const makePlayer = (mid, Tone = ToneJS) => {
         getProgressEmmiterId = setInterval(emitCurrentProgressEvent, 1000);
     };
     const stopProgressEmission = () => {
-        console.log('stopProgressEmission');
         clearInterval(getProgressEmmiterId);
     };
 

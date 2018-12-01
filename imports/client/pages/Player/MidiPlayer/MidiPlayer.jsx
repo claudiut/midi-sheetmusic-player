@@ -20,6 +20,8 @@ class Player extends React.Component {
                 playButtonLabel: LABELS.PAUSE,
             }));
         });
+
+        window.player = this.props.player;
     }
 
     handlePlay = () => {
@@ -39,7 +41,6 @@ class Player extends React.Component {
 
     handleProgressChange = ({ target, clientX }) => {
         const progressBarWrapper = findAncestor(target, 'progress-bar-wrapper');
-        console.log('target', target, progressBarWrapper);
 
         const {
             player: {
@@ -110,11 +111,10 @@ class Player extends React.Component {
                                             });
                                         }}
                                         style={{
-                                            fontWeight: this.state.mutedParts[
-                                                index
-                                            ]
-                                                ? 'normal'
-                                                : 'bold',
+                                            textDecoration: this.state
+                                                .mutedParts[index]
+                                                ? 'line-through'
+                                                : '',
                                         }}
                                     >
                                         {index + 1}
