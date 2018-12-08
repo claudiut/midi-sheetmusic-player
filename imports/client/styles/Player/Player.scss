@@ -7,35 +7,45 @@
     z-index: 100000;
 }
 
-#midi-player .part-buttons {
+#midi-player {
+    display: flex;
+}
+
+#midi-player .main-part {
+    width: 100%;
     display: flex;
 
-    button {
+    .progress-bar-wrapper {
         width: 100%;
+        border: 1px solid #bbb;
+        display: flex;
+
+        .progress-bar {
+            background-color: green;
+        }
     }
 }
 
-#midi-player .progress-bar-wrapper {
-    width: 100%;
-    border: 1px solid gray;
+#midi-player .mixer-part {
+    display: flex;
+
+    .voice-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+
+        button.voice-button {
+            font-weight: bold;
+
+            &.muted {
+                color: #bbb;
+            }
+        }
+    }
 }
-#midi-player .progress-bar {
-    height: 1em;
-    background-color: green;
-}
-#midi-player .progress-bar .progress-bar-inner {
-    position: 'absolute';
-    top: 0;
-    left: 0;
-    background-color: 'gray';
-    bottom: 0;
-}
-#midi-player .progress-bar .progress-bar-overlay {
-    position: 'absolute';
-    color: 'black';
-    text-shadow: 0px 0px 3px white;
-    text-align: 'center';
-    left: 0;
-    top: 0;
-    width: 100%;
+
+@media all and (max-width: 560px) {
+    #midi-player {
+        flex-direction: column;
+    }
 }
