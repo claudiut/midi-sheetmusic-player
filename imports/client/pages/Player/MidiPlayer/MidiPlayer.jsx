@@ -5,6 +5,8 @@ import MidiPlayerContainer from './MidiPlayerContainer';
 import {
     LABELS,
     VELOCITIES,
+    KEY_CODES,
+    PROGRESS_JUMP_IN_SECONDS,
 } from '/imports/client/pages/Player/MidiPlayer/constants';
 import { findAncestor } from '/imports/client/lib/helpers';
 import getQueryString from '/imports/client/utils/getQueryString';
@@ -39,8 +41,53 @@ class Player extends React.Component {
             this.setPartVelocity(index, VELOCITIES.LOWEST);
         });
 
+        window.addEventListener('keydown', this.handleKeyPress);
+
         window.player = this.props.player;
     }
+
+    setProgress = percentage => {
+        const { player } = this.props;
+
+        player.setProgress(percentage * player.mid.duration);
+
+        // this is to show the progress bar even when song is stoppped
+        this.setState(() => ({ percentage: percentage * 100 }));
+    };
+
+    setPartVelocity = (index, value) => {
+        const velocity = parseFloat(value);
+        this.props.player.setPartVelocity(index, velocity);
+
+        this.setState(({ partVelocity = {} }) => ({
+            partVelocity: {
+                ...partVelocity,
+                [index]: velocity,
+            },
+        }));
+    };
+
+    setProgressJump = jumpValue => {
+        const {
+            player: { getCurrentTime, mid },
+        } = this.props;
+
+        const seekSeconds = getCurrentTime() + jumpValue;
+        const newSeconds = Math.min(mid.duration, Math.max(0, seekSeconds));
+        const newProgress = newSeconds / mid.duration;
+
+        this.setProgress(newProgress);
+    };
+
+    handleKeyPress = ({ key, keyCode }) => {
+        if (key === ' ' || keyCode === KEY_CODES.SPACE) {
+            this.handlePlay();
+        } else if (keyCode === KEY_CODES.ARROW_LEFT) {
+            this.setProgressJump(-1 * PROGRESS_JUMP_IN_SECONDS);
+        } else if (keyCode === KEY_CODES.ARROW_RIGHT) {
+            this.setProgressJump(PROGRESS_JUMP_IN_SECONDS);
+        }
+    };
 
     handlePlay = () => {
         const { player } = this.props;
@@ -60,29 +107,22 @@ class Player extends React.Component {
     handleProgressChange = ({ target, clientX }) => {
         const progressBarWrapper = findAncestor(target, 'progress-bar-wrapper');
 
-        const {
-            player: {
-                mid: { duration },
-                setProgress,
-            },
-        } = this.props;
         const { left, right } = progressBarWrapper.getBoundingClientRect();
 
         const percentageClicked =
             Math.max(clientX - left, 0) / Math.max(right - left, 0);
-        setProgress(percentageClicked * duration);
 
-        // this is to show the progress bar even when song is stoppped
-        this.setState(() => ({ percentage: percentageClicked * 100 }));
+        this.setProgress(percentageClicked);
     };
 
-    setPartVelocity = (index, value) => {
-        this.props.player.setPartVelocity(index, parseFloat(value));
+    handlePartVolumeChange = ({ target, clientY }, index) => {
+        const volumeBarWrapper = findAncestor(target, 'part-volume-wrapper');
 
-        this.setState({
-            ...(this.state.partVelocity || {}),
-            [index]: value,
-        });
+        const { top, bottom } = volumeBarWrapper.getBoundingClientRect();
+
+        const velocity = Math.max(clientY - top, 0) / Math.max(bottom - top, 0);
+
+        this.setPartVelocity(index, velocity);
     };
 
     render() {
@@ -140,7 +180,7 @@ class Player extends React.Component {
                                     {index + 1}
                                 </button>
 
-                                <select
+                                {/* {<select
                                     value={this.state.partVelocity[index]}
                                     onChange={({ target: { value } }) => {
                                         this.setPartVelocity(
@@ -162,9 +202,34 @@ class Player extends React.Component {
                                     <option value={VELOCITIES.HIGHEST}>
                                         Highest
                                     </option>
-                                </select>
+                                </select>} */}
 
-                                <div>vil</div>
+                                <div
+                                    className="part-volume-wrapper"
+                                    onClick={event => {
+                                        this.handlePartVolumeChange(
+                                            event,
+                                            index,
+                                        );
+                                    }}
+                                >
+                                    <span className="volume-label-min">
+                                        MIN
+                                    </span>
+                                    <span className="volume-label-max">
+                                        MAX
+                                    </span>
+                                    <div
+                                        className="part-volume"
+                                        style={{
+                                            height: `${this.state.partVelocity[
+                                                index
+                                            ] * 100}%`,
+                                        }}
+                                    >
+                                        <div className="volume-meter" />
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>

@@ -97,6 +97,7 @@ const makePlayer = (mid, Tone = ToneJS) => {
         stop,
         isPlaying: () => Tone.Transport.state === 'started',
         getParts: () => parts, //getNonEmptyParts.bind(getNonEmptyParts, parts),
+        getCurrentTime: () => Tone.Transport.seconds,
         toggleMutePart: part => {
             part.mute = !part.mute;
             return part.mute;
