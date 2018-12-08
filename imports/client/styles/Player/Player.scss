@@ -7,8 +7,23 @@
     z-index: 100000;
 }
 
+#midi-player-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+#song-title {
+    text-align: center;
+    font-weight: bold;
+    padding: 0 2px 10px 2px;
+}
+
 #midi-player {
     display: flex;
+}
+
+#midi-player button {
+    padding: 8px;
 }
 
 #midi-player .main-part {

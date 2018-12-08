@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 
 import MidiPlayerContainer from './MidiPlayerContainer';
 import {
@@ -6,7 +7,7 @@ import {
     VELOCITIES,
 } from '/imports/client/pages/Player/MidiPlayer/constants';
 import { findAncestor } from '/imports/client/lib/helpers';
-import classNames from 'classnames';
+import getQueryString from '/imports/client/utils/getQueryString';
 
 class Player extends React.Component {
     constructor(props) {
@@ -86,78 +87,87 @@ class Player extends React.Component {
 
     render() {
         const { player } = this.props;
+        const songTitle = getQueryString('title');
 
         return (
-            <div id="midi-player">
-                <div className="main-part">
-                    <button type="button" onClick={this.handlePlay}>
-                        {this.state.playButtonLabel}
-                    </button>
+            <div id="midi-player-wrapper">
+                {songTitle && <div id="song-title">{songTitle}</div>}
+                <div id="midi-player">
+                    <div className="main-part">
+                        <button type="button" onClick={this.handlePlay}>
+                            {this.state.playButtonLabel}
+                        </button>
 
-                    <button type="button" onClick={this.handleStop}>
-                        {LABELS.STOP}
-                    </button>
+                        <button type="button" onClick={this.handleStop}>
+                            {LABELS.STOP}
+                        </button>
 
-                    <div
-                        className="progress-bar-wrapper"
-                        onClick={this.handleProgressChange}
-                    >
                         <div
-                            className="progress-bar"
-                            style={{ width: `${this.state.percentage}%` }}
+                            className="progress-bar-wrapper"
+                            onClick={this.handleProgressChange}
                         >
-                            {/*        <div className="progress-bar-overlay">
+                            <div
+                                className="progress-bar"
+                                style={{ width: `${this.state.percentage}%` }}
+                            >
+                                {/*        <div className="progress-bar-overlay">
                                         {measureNumber
                                             ? `masura ${measureNumber}`
                                             : ''}
                                         </div>*/}
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div className="mixer-part">
-                    {player.getParts().map((part, index) => (
-                        <div className="voice-container" key={index}>
-                            <button
-                                type="button"
-                                className={classNames({
-                                    'voice-button': true,
-                                    muted: !!this.state.mutedParts[index],
-                                })}
-                                onClick={() => {
-                                    player.toggleMutePart(part);
-                                    this.setState({
-                                        mutedParts: {
-                                            ...this.state.mutedParts,
-                                            [index]: part.mute,
-                                        },
-                                    });
-                                }}
-                            >
-                                {index + 1}
-                            </button>
-                            <select
-                                value={this.state.partVelocity[index]}
-                                onChange={({ target: { value } }) => {
-                                    this.setPartVelocity(
-                                        index,
-                                        parseFloat(value),
-                                    );
-                                }}
-                            >
-                                <option value={VELOCITIES.LOWEST}>
-                                    Lowest
-                                </option>
-                                <option value={VELOCITIES.LOW}>Low</option>
-                                <option value={VELOCITIES.MEDIUM}>
-                                    Medium
-                                </option>
-                                <option value={VELOCITIES.HIGH}>High</option>
-                                <option value={VELOCITIES.HIGHEST}>
-                                    Highest
-                                </option>
-                            </select>
-                        </div>
-                    ))}
+                    <div className="mixer-part">
+                        {player.getParts().map((part, index) => (
+                            <div className="voice-container" key={index}>
+                                <button
+                                    type="button"
+                                    className={classNames({
+                                        'voice-button': true,
+                                        muted: !!this.state.mutedParts[index],
+                                    })}
+                                    onClick={() => {
+                                        player.toggleMutePart(part);
+                                        this.setState({
+                                            mutedParts: {
+                                                ...this.state.mutedParts,
+                                                [index]: part.mute,
+                                            },
+                                        });
+                                    }}
+                                >
+                                    {index + 1}
+                                </button>
+
+                                <select
+                                    value={this.state.partVelocity[index]}
+                                    onChange={({ target: { value } }) => {
+                                        this.setPartVelocity(
+                                            index,
+                                            parseFloat(value),
+                                        );
+                                    }}
+                                >
+                                    <option value={VELOCITIES.LOWEST}>
+                                        Lowest
+                                    </option>
+                                    <option value={VELOCITIES.LOW}>Low</option>
+                                    <option value={VELOCITIES.MEDIUM}>
+                                        Medium
+                                    </option>
+                                    <option value={VELOCITIES.HIGH}>
+                                        High
+                                    </option>
+                                    <option value={VELOCITIES.HIGHEST}>
+                                        Highest
+                                    </option>
+                                </select>
+
+                                <div>vil</div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         );
