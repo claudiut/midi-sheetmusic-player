@@ -67,33 +67,56 @@ body,
                 color: #bbb;
             }
         }
+    }
+}
 
-        .part-volume-wrapper {
+#midi-player .part-volume-wrapper {
+    height: 100%;
+    border: 1px solid #ccc;
+    position: relative;
+    min-width: 40px;
+
+    .volume-label-min,
+    .volume-label-max {
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 0.8em;
+        cursor: default;
+    }
+    .volume-label-min {
+        top: 7px;
+    }
+    .volume-label-max {
+        bottom: 7px;
+    }
+
+    .part-volume {
+        background-color: #ccc;
+        margin: 1px;
+    }
+
+    .volume-meter {
+        background-color: orange;
+        height: 0;
+
+        &.animate {
             height: 100%;
-            border: 1px solid #ccc;
-            position: relative;
-            min-width: 40px;
+            animation-name: volume-meter-animation;
+            animation-duration: 0.1s;
         }
+    }
+}
 
-        .part-volume-wrapper .volume-label-min,
-        .part-volume-wrapper .volume-label-max {
-            position: absolute;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 0.8em;
-        }
-        .part-volume-wrapper .volume-label-min {
-            top: 7px;
-        }
-        .part-volume-wrapper .volume-label-max {
-            bottom: 7px;
-        }
-
-        .part-volume-wrapper .part-volume {
-            background-color: #ccc;
-            margin: 1px;
-        }
+@keyframes volume-meter-animation {
+    from {
+        height: 0;
+        opacity: 0.5;
+    }
+    to {
+        height: 100%;
+        opacity: 1;
     }
 }
 

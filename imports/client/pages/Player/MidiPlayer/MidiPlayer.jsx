@@ -1,5 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
+import cloneDeep from 'lodash/cloneDeep';
 
 import MidiPlayerContainer from './MidiPlayerContainer';
 import {
@@ -18,10 +19,13 @@ class Player extends React.Component {
         this.state = {
             mutedParts: {},
             partVelocity: {},
+            partCurrentNotes: {},
             percentage: 0,
             playButtonLabel: LABELS.PLAY,
         };
     }
+
+    partCurrentNotesTimeout = {};
 
     componentDidMount() {
         const { player } = this.props;
@@ -37,6 +41,20 @@ class Player extends React.Component {
             }));
         });
 
+        player.onNote(note => {
+            clearTimeout(this.partCurrentNotesTimeout[note.partIndex]);
+
+            this.setCurrentNote(note);
+
+            this.partCurrentNotesTimeout[note.partIndex] = setTimeout(() => {
+                const partCrtNotes = cloneDeep(this.state.partCurrentNotes);
+                delete partCrtNotes[note.partIndex];
+                this.setState(() => ({
+                    partCurrentNotes: partCrtNotes,
+                }));
+            }, note.note.duration * 1000 - 50);
+        });
+
         player.getParts().forEach((part, index) => {
             this.setPartVelocity(index, VELOCITIES.LOWEST);
         });
@@ -45,6 +63,19 @@ class Player extends React.Component {
 
         window.player = this.props.player;
     }
+
+    setCurrentNote = ({ partIndex, note: { velocity, duration, time } }) => {
+        this.setState(({ partCurrentNotes = {} }) => ({
+            partCurrentNotes: {
+                ...partCurrentNotes,
+                [partIndex]: {
+                    velocity,
+                    duration,
+                    time,
+                },
+            },
+        }));
+    };
 
     setProgress = percentage => {
         const { player } = this.props;
@@ -65,6 +96,14 @@ class Player extends React.Component {
                 [index]: velocity,
             },
         }));
+    };
+
+    getPartCurrentVelocity = index => {
+        return (this.state.partCurrentNotes[index] || {}).velocity || 0;
+    };
+
+    getPartCurrentDuration = index => {
+        return (this.state.partCurrentNotes[index] || {}).duration || 0;
     };
 
     setProgressJump = jumpValue => {
@@ -128,6 +167,7 @@ class Player extends React.Component {
     render() {
         const { player } = this.props;
         const songTitle = getQueryString('title');
+        console.log(this.state.partCurrentNotes);
 
         return (
             <div id="midi-player-wrapper">
@@ -149,13 +189,7 @@ class Player extends React.Component {
                             <div
                                 className="progress-bar"
                                 style={{ width: `${this.state.percentage}%` }}
-                            >
-                                {/*        <div className="progress-bar-overlay">
-                                        {measureNumber
-                                            ? `masura ${measureNumber}`
-                                            : ''}
-                                        </div>*/}
-                            </div>
+                            />
                         </div>
                     </div>
                     <div className="mixer-part">
@@ -180,30 +214,6 @@ class Player extends React.Component {
                                     {index + 1}
                                 </button>
 
-                                {/* {<select
-                                    value={this.state.partVelocity[index]}
-                                    onChange={({ target: { value } }) => {
-                                        this.setPartVelocity(
-                                            index,
-                                            parseFloat(value),
-                                        );
-                                    }}
-                                >
-                                    <option value={VELOCITIES.LOWEST}>
-                                        Lowest
-                                    </option>
-                                    <option value={VELOCITIES.LOW}>Low</option>
-                                    <option value={VELOCITIES.MEDIUM}>
-                                        Medium
-                                    </option>
-                                    <option value={VELOCITIES.HIGH}>
-                                        High
-                                    </option>
-                                    <option value={VELOCITIES.HIGHEST}>
-                                        Highest
-                                    </option>
-                                </select>} */}
-
                                 <div
                                     className="part-volume-wrapper"
                                     onClick={event => {
@@ -227,7 +237,17 @@ class Player extends React.Component {
                                             ] * 100}%`,
                                         }}
                                     >
-                                        <div className="volume-meter" />
+                                        <div
+                                            className={classNames(
+                                                'volume-meter',
+                                                {
+                                                    animate: !!this.state
+                                                        .partCurrentNotes[
+                                                        index
+                                                    ],
+                                                },
+                                            )}
+                                        />
                                     </div>
                                 </div>
                             </div>
