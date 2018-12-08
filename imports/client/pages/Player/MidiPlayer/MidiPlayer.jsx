@@ -1,11 +1,23 @@
 import React from 'react';
 
 import MidiPlayerContainer from './MidiPlayerContainer';
-import { LABELS } from '/imports/client/pages/Player/MidiPlayer/constants';
+import {
+    LABELS,
+    VELOCITIES,
+} from '/imports/client/pages/Player/MidiPlayer/constants';
 import { findAncestor } from '/imports/client/lib/helpers';
 
 class Player extends React.Component {
-    state = { mutedParts: {}, percentage: 0, playButtonLabel: LABELS.PLAY };
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            mutedParts: {},
+            partVelocity: {},
+            percentage: 0,
+            playButtonLabel: LABELS.PLAY,
+        };
+    }
 
     componentDidMount() {
         const { player } = this.props;
@@ -19,6 +31,10 @@ class Player extends React.Component {
                 percentage: (seconds / duration) * 100,
                 playButtonLabel: LABELS.PAUSE,
             }));
+        });
+
+        player.getParts().forEach((part, index) => {
+            this.setPartVelocity(index, VELOCITIES.LOWEST);
         });
 
         window.player = this.props.player;
@@ -59,11 +75,19 @@ class Player extends React.Component {
         this.setState(() => ({ percentage: percentageClicked * 100 }));
     };
 
+    setPartVelocity = (index, value) => {
+        this.props.player.setPartVelocity(index, parseFloat(value));
+
+        this.setState({
+            ...(this.state.partVelocity || {}),
+            [index]: value,
+        });
+    };
+
     render() {
         const { player } = this.props;
 
-        return (
-            <React.Fragment>
+        return <React.Fragment>
                 <table id="midi-player" style={{ width: '100%' }}>
                     <tbody>
                         <tr>
@@ -78,16 +102,8 @@ class Player extends React.Component {
                                 </button>
                             </td>
 
-                            <td
-                                className="progress-bar-wrapper"
-                                onClick={this.handleProgressChange}
-                            >
-                                <div
-                                    className="progress-bar"
-                                    style={{
-                                        width: `${this.state.percentage}%`,
-                                    }}
-                                >
+                            <td className="progress-bar-wrapper" onClick={this.handleProgressChange}>
+                                <div className="progress-bar" style={{ width: `${this.state.percentage}%` }}>
                                     {/*                                    <div className="progress-bar-overlay">
                                         {measureNumber
                                             ? `masura ${measureNumber}`
@@ -97,35 +113,101 @@ class Player extends React.Component {
                             </td>
 
                             <td className="part-buttons">
-                                {player.getParts().map((part, index) => (
-                                    <button
-                                        key={index}
-                                        type="button"
-                                        onClick={() => {
-                                            player.toggleMutePart(part);
-                                            this.setState({
-                                                mutedParts: {
-                                                    ...this.state.mutedParts,
-                                                    [index]: part.mute,
-                                                },
-                                            });
-                                        }}
-                                        style={{
-                                            textDecoration: this.state
-                                                .mutedParts[index]
-                                                ? 'line-through'
-                                                : '',
-                                        }}
-                                    >
-                                        {index + 1}
-                                    </button>
-                                ))}
+                                {player
+                                    .getParts()
+                                    .map((part, index) => (
+                                        <div key={index}>
+                                            <button
+                                                type="button"
+                                                className={`voice-button-${index}`}
+                                                onClick={() => {
+                                                    player.toggleMutePart(
+                                                        part,
+                                                    );
+                                                    this.setState({
+                                                        mutedParts: {
+                                                            ...this
+                                                                .state
+                                                                .mutedParts,
+                                                            [index]:
+                                                                part.mute,
+                                                        },
+                                                    });
+                                                }}
+                                                style={{
+                                                    fontWeight: this
+                                                        .state
+                                                        .mutedParts[
+                                                        index
+                                                    ]
+                                                        ? 'normal'
+                                                        : 'bold',
+                                                }}
+                                            >
+                                                {index + 1}
+                                            </button>
+                                            <br />
+                                            <select
+                                                value={
+                                                    this.state
+                                                        .partVelocity[
+                                                        index
+                                                    ]
+                                                }
+                                                onChange={({
+                                                    target: { value },
+                                                }) => {
+                                                    this.setPartVelocity(
+                                                        index,
+                                                        parseFloat(
+                                                            value,
+                                                        ),
+                                                    );
+                                                }}
+                                            >
+                                                <option
+                                                    value={
+                                                        VELOCITIES.LOWEST
+                                                    }
+                                                >
+                                                    Lowest
+                                                </option>
+                                                <option
+                                                    value={
+                                                        VELOCITIES.LOW
+                                                    }
+                                                >
+                                                    Low
+                                                </option>
+                                                <option
+                                                    value={
+                                                        VELOCITIES.MEDIUM
+                                                    }
+                                                >
+                                                    Medium
+                                                </option>
+                                                <option
+                                                    value={
+                                                        VELOCITIES.HIGH
+                                                    }
+                                                >
+                                                    High
+                                                </option>
+                                                <option
+                                                    value={
+                                                        VELOCITIES.HIGHEST
+                                                    }
+                                                >
+                                                    Highest
+                                                </option>
+                                            </select>
+                                        </div>
+                                    ))}
                             </td>
                         </tr>
                     </tbody>
                 </table>
-            </React.Fragment>
-        );
+            </React.Fragment>;
     }
 }
 

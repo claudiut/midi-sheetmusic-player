@@ -9,6 +9,10 @@
 
 #midi-player .part-buttons {
     display: flex;
+
+    button {
+        width: 100%;
+    }
 }
 
 #midi-player .progress-bar-wrapper {
