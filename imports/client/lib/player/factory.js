@@ -13,6 +13,9 @@ const playerEmitter = new PlayerEmitter();
 
 const partVelocity = {};
 
+const chordsOnByTime = {};
+const noteBucket = {};
+
 const createPart = (track, partIndex, { synth, Tone }) => {
     const part = new Tone.Part((time, note) => {
         // use the midi events / notes to play the synth
@@ -23,11 +26,16 @@ const createPart = (track, partIndex, { synth, Tone }) => {
             partVelocity[partIndex] || note.velocity,
         );
 
-        playerEmitter.emit('note', {
-            partIndex,
-            note,
-            time,
-        });
+        noteBucket[note.time] = noteBucket[note.time] || 0;
+        noteBucket[note.time] += 1;
+
+        // Trigger a single event per chord, not for every note as it's not optimal
+        // Emit chord event only when chord bucket filled with notes so that
+        // we trigger it one time only and then we reset it to be able to trigger it again at replays
+        if (noteBucket[note.time] === chordsOnByTime[note.time].length) {
+            noteBucket[note.time] = 0;
+            playerEmitter.emit('chordOn', chordsOnByTime[note.time]);
+        }
     }, track.notes);
 
     part.start();
@@ -35,12 +43,24 @@ const createPart = (track, partIndex, { synth, Tone }) => {
     return part;
 };
 
-const createPartsFromTracks = ({ tracks }, dependencies) =>
-    tracks
-        .filter(({ notes }) => notes.length > 0)
-        .map((track, index) => createPart(track, index, dependencies));
+const getNonEmptyTracks = tracks =>
+    tracks.filter(({ notes }) => notes.length > 0);
 
-const getNonEmptyParts = parts => parts.filter(({ length }) => length);
+const createPartsFromTracks = ({ tracks }, dependencies) =>
+    getNonEmptyTracks(tracks).map((track, index) =>
+        createPart(track, index, dependencies),
+    );
+
+const createChordOnAndOffGroups = ({ tracks }) => {
+    getNonEmptyTracks(tracks).forEach(({ notes }, partIndex) => {
+        notes.forEach(note => {
+            chordsOnByTime[note.time] = [
+                ...(chordsOnByTime[note.time] || []),
+                { note, partIndex },
+            ];
+        });
+    });
+};
 
 // Dependency Injection for easy testability
 const makePlayer = (mid, Tone = ToneJS) => {
@@ -48,6 +68,8 @@ const makePlayer = (mid, Tone = ToneJS) => {
 
     const parts = createPartsFromTracks(mid, { synth, Tone });
 
+    createChordOnAndOffGroups(mid);
+    // console.log(chordsOnByTime, chordsOffByTime, 'mid', mid);
     const stop = () => {
         Tone.context.resume().then(() => {
             Tone.Transport.stop();
@@ -96,7 +118,7 @@ const makePlayer = (mid, Tone = ToneJS) => {
         },
         stop,
         isPlaying: () => Tone.Transport.state === 'started',
-        getParts: () => parts, //getNonEmptyParts.bind(getNonEmptyParts, parts),
+        getParts: () => parts,
         getCurrentTime: () => Tone.Transport.seconds,
         toggleMutePart: part => {
             part.mute = !part.mute;
@@ -111,7 +133,8 @@ const makePlayer = (mid, Tone = ToneJS) => {
         onPlay: callback => Tone.Transport.on('start', callback),
         onStop: callback => Tone.Transport.on('stop', callback),
         onProgress: callback => playerEmitter.on('progress', callback),
-        onNote: callback => playerEmitter.on('note', callback),
+        onChordOn: callback => playerEmitter.on('chordOn', callback),
+        onChordOff: callback => playerEmitter.on('chordOff', callback),
     };
 };
 

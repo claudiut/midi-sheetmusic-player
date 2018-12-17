@@ -19,13 +19,12 @@ class Player extends React.Component {
         this.state = {
             mutedParts: {},
             partVelocity: {},
-            partCurrentNotes: {},
+            partsOn: {},
             percentage: 0,
             playButtonLabel: LABELS.PLAY,
+            currentTimeFormatted: this.formatTime(0),
         };
     }
-
-    partCurrentNotesTimeout = {};
 
     componentDidMount() {
         const { player } = this.props;
@@ -38,21 +37,25 @@ class Player extends React.Component {
             this.setState(() => ({
                 percentage: (seconds / duration) * 100,
                 playButtonLabel: LABELS.PAUSE,
+                currentTimeFormatted: this.formatTime(seconds),
             }));
         });
 
-        player.onNote(note => {
-            clearTimeout(this.partCurrentNotesTimeout[note.partIndex]);
+        player.onChordOn(chordOn => {
+            // console.log('chordOn', chordOn);
 
-            this.setCurrentNote(note);
-
-            this.partCurrentNotesTimeout[note.partIndex] = setTimeout(() => {
-                const partCrtNotes = cloneDeep(this.state.partCurrentNotes);
-                delete partCrtNotes[note.partIndex];
-                this.setState(() => ({
-                    partCurrentNotes: partCrtNotes,
-                }));
-            }, note.note.duration * 1000 - 50);
+            this.setState(({ partsOn }) => ({
+                partsOn: {
+                    ...partsOn,
+                    ...chordOn.reduce(
+                        (acc, { note, partIndex }) => ({
+                            ...acc,
+                            [partIndex]: note,
+                        }),
+                        {},
+                    ),
+                },
+            }));
         });
 
         player.getParts().forEach((part, index) => {
@@ -63,19 +66,6 @@ class Player extends React.Component {
 
         window.player = this.props.player;
     }
-
-    setCurrentNote = ({ partIndex, note: { velocity, duration, time } }) => {
-        this.setState(({ partCurrentNotes = {} }) => ({
-            partCurrentNotes: {
-                ...partCurrentNotes,
-                [partIndex]: {
-                    velocity,
-                    duration,
-                    time,
-                },
-            },
-        }));
-    };
 
     setProgress = percentage => {
         const { player } = this.props;
@@ -98,12 +88,21 @@ class Player extends React.Component {
         }));
     };
 
-    getPartCurrentVelocity = index => {
-        return (this.state.partCurrentNotes[index] || {}).velocity || 0;
+    getPartCurrentDuration = index => {
+        return (this.state.partsOn[index] || {}).duration || 0;
     };
 
-    getPartCurrentDuration = index => {
-        return (this.state.partCurrentNotes[index] || {}).duration || 0;
+    getPartCurrentTime = index => {
+        return (this.state.partsOn[index] || {}).time || 0;
+    };
+
+    addZeroPadding = number => (number < 10 ? '0' + number : number.toString());
+
+    formatTime = seconds => {
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds - m * 60);
+
+        return `${this.addZeroPadding(m)}:${this.addZeroPadding(s)}`;
     };
 
     setProgressJump = jumpValue => {
@@ -167,7 +166,6 @@ class Player extends React.Component {
     render() {
         const { player } = this.props;
         const songTitle = getQueryString('title');
-        console.log(this.state.partCurrentNotes);
 
         return (
             <div id="midi-player-wrapper">
@@ -186,6 +184,9 @@ class Player extends React.Component {
                             className="progress-bar-wrapper"
                             onClick={this.handleProgressChange}
                         >
+                            <div className="progress-time">
+                                {this.state.currentTimeFormatted}
+                            </div>
                             <div
                                 className="progress-bar"
                                 style={{ width: `${this.state.percentage}%` }}
@@ -238,15 +239,19 @@ class Player extends React.Component {
                                         }}
                                     >
                                         <div
+                                            key={this.getPartCurrentTime(index)}
                                             className={classNames(
                                                 'volume-meter',
                                                 {
                                                     animate: !!this.state
-                                                        .partCurrentNotes[
-                                                        index
-                                                    ],
+                                                        .partsOn[index],
                                                 },
                                             )}
+                                            style={{
+                                                animationDuration: `${this.getPartCurrentDuration(
+                                                    index,
+                                                )}s`,
+                                            }}
                                         />
                                     </div>
                                 </div>
