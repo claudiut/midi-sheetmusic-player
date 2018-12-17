@@ -15,6 +15,10 @@ body,
     padding: 0;
 }
 
+body * {
+    font-size: 15px;
+}
+
 #midi-player-wrapper {
     height: 100%;
     display: flex;
@@ -29,6 +33,7 @@ body,
 
 #midi-player {
     display: flex;
+    flex-direction: column;
     height: 100%;
 }
 
@@ -55,6 +60,8 @@ body,
             justify-content: center;
             align-items: center;
             cursor: default;
+            font-size: 1.15em;
+            font-weight: bold;
         }
 
         .progress-bar {
@@ -65,6 +72,7 @@ body,
 
 #midi-player .mixer-part {
     display: flex;
+    height: 100%;
 
     .voice-container {
         display: flex;
@@ -121,19 +129,19 @@ body,
 
 @keyframes volume-meter-animation {
     from {
-        height: 0;
+        height: 30%;
     }
     to {
         height: 100%;
     }
 }
 
-@media all and (max-width: 560px) {
+@media only screen and (min-width: 760px) {
     #midi-player {
-        flex-direction: column;
+        flex-direction: row;
 
-        .mixer-part {
-            height: 100%;
-        }
+        // .mixer-part {
+        //     height: 100%;
+        // }
     }
 }

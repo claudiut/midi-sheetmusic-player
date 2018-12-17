@@ -15,6 +15,10 @@ const partVelocity = {};
 
 const chordsOnByTime = {};
 const noteBucket = {};
+let parts = [];
+
+const getUnmutedNotes = chord =>
+    chord.filter(({ partIndex }) => !parts[partIndex].mute);
 
 const createPart = (track, partIndex, { synth, Tone }) => {
     const part = new Tone.Part((time, note) => {
@@ -28,13 +32,16 @@ const createPart = (track, partIndex, { synth, Tone }) => {
 
         noteBucket[note.time] = noteBucket[note.time] || 0;
         noteBucket[note.time] += 1;
-
+        // console.log('>>', note);
         // Trigger a single event per chord, not for every note as it's not optimal
         // Emit chord event only when chord bucket filled with notes so that
         // we trigger it one time only and then we reset it to be able to trigger it again at replays
-        if (noteBucket[note.time] === chordsOnByTime[note.time].length) {
+        const chord = getUnmutedNotes(chordsOnByTime[note.time]);
+        console.log(chord);
+
+        if (noteBucket[note.time] === chord.length) {
             noteBucket[note.time] = 0;
-            playerEmitter.emit('chordOn', chordsOnByTime[note.time]);
+            playerEmitter.emit('chordOn', chord);
         }
     }, track.notes);
 
@@ -66,7 +73,7 @@ const createChordOnAndOffGroups = ({ tracks }) => {
 const makePlayer = (mid, Tone = ToneJS) => {
     const synth = new Tone.PolySynth(PLAYER_POLYPHONY).toMaster();
 
-    const parts = createPartsFromTracks(mid, { synth, Tone });
+    parts = createPartsFromTracks(mid, { synth, Tone });
 
     createChordOnAndOffGroups(mid);
     // console.log(chordsOnByTime, chordsOffByTime, 'mid', mid);
