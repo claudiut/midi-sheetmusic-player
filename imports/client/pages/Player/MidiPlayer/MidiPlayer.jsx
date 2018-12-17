@@ -29,16 +29,10 @@ class Player extends React.Component {
     componentDidMount() {
         const { player } = this.props;
 
-        player.onStop(() =>
-            this.setState({ percentage: 0, playButtonLabel: LABELS.PLAY }),
-        );
+        player.onStop(() => this.setProgress(0, false));
 
         player.onProgress(({ seconds, duration }) => {
-            this.setState(() => ({
-                percentage: (seconds / duration) * 100,
-                playButtonLabel: LABELS.PAUSE,
-                currentTimeFormatted: this.formatTime(seconds),
-            }));
+            this.setProgress(seconds / duration, false);
         });
 
         player.onChordOn(chordOn => {
@@ -59,21 +53,28 @@ class Player extends React.Component {
         });
 
         player.getParts().forEach((part, index) => {
-            this.setPartVelocity(index, VELOCITIES.LOWEST);
+            this.setPartVelocity(index, VELOCITIES.LOW);
         });
 
         window.addEventListener('keydown', this.handleKeyPress);
 
         window.player = this.props.player;
     }
-
-    setProgress = percentage => {
+    
+    setProgress = (percentage, setPlayerProgress = true) => {
         const { player } = this.props;
+        const seconds = percentage * player.mid.duration;
 
-        player.setProgress(percentage * player.mid.duration);
+        if (setPlayerProgress) {
+            player.setProgress(seconds);
+        }
 
         // this is to show the progress bar even when song is stoppped
-        this.setState(() => ({ percentage: percentage * 100 }));
+        this.setState(() => ({
+            percentage: percentage * 100,
+            playButtonLabel: player.isPlaying() ? LABELS.PAUSE : LABELS.PLAY,
+            currentTimeFormatted: this.formatTime(seconds),
+        }));
     };
 
     setPartVelocity = (index, value) => {
@@ -165,11 +166,12 @@ class Player extends React.Component {
 
     render() {
         const { player } = this.props;
-        const songTitle = getQueryString('title');
+        const fileName = (getQueryString('file') || '').split('/').slice(-1)[0];
+        const songTitle = getQueryString('title') || fileName;
 
         return (
             <div id="midi-player-wrapper">
-                {songTitle && <div id="song-title">{songTitle}</div>}
+                {songTitle && <div id="song-title">{songTitle || fileName}</div>}
                 <div id="midi-player">
                     <div className="main-part">
                         <button type="button" onClick={this.handlePlay}>

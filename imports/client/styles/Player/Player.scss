@@ -15,8 +15,12 @@ body,
     padding: 0;
 }
 
-body * {
-    font-size: 15px;
+* {
+    font-size: 18px;
+
+    &:focus {
+        outline: none;
+    }
 }
 
 #midi-player-wrapper {
@@ -60,7 +64,6 @@ body * {
             justify-content: center;
             align-items: center;
             cursor: default;
-            font-size: 1.15em;
             font-weight: bold;
         }
 
@@ -122,7 +125,7 @@ body * {
 
         &.animate {
             animation-name: volume-meter-animation;
-            // animation-duration: 0.1s;
+            animation-timing-function: linear;
         }
     }
 }

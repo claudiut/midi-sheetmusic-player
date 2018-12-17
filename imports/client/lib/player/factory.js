@@ -7,7 +7,7 @@ import EventEmitter from 'events';
 
 import { PLAYER_POLYPHONY } from './constants';
 
-class PlayerEmitter extends EventEmitter {}
+class PlayerEmitter extends EventEmitter { }
 // used for custom events, that is, events not already handled ToneJS library
 const playerEmitter = new PlayerEmitter();
 
@@ -16,6 +16,7 @@ const partVelocity = {};
 const chordsOnByTime = {};
 const noteBucket = {};
 let parts = [];
+let instrument;
 
 const getUnmutedNotes = chord =>
     chord.filter(({ partIndex }) => !parts[partIndex].mute);
@@ -23,12 +24,19 @@ const getUnmutedNotes = chord =>
 const createPart = (track, partIndex, { synth, Tone }) => {
     const part = new Tone.Part((time, note) => {
         // use the midi events / notes to play the synth
-        synth.triggerAttackRelease(
-            Tone.Frequency(note.name).transpose(0),
-            note.duration,
-            time,
-            partVelocity[partIndex] || note.velocity,
-        );
+        if (instrument) {
+            instrument.play(note.name, Tone.context.currentTime, {
+                duration: note.duration,
+                gain: partVelocity[partIndex] || note.velocity
+            });
+        } else {
+            synth.triggerAttackRelease(
+                Tone.Frequency(note.name).transpose(0),
+                note.duration,
+                time,
+                partVelocity[partIndex] || note.velocity,
+            );
+        }
 
         noteBucket[note.time] = noteBucket[note.time] || 0;
         noteBucket[note.time] += 1;
@@ -37,7 +45,7 @@ const createPart = (track, partIndex, { synth, Tone }) => {
         // Emit chord event only when chord bucket filled with notes so that
         // we trigger it one time only and then we reset it to be able to trigger it again at replays
         const chord = getUnmutedNotes(chordsOnByTime[note.time]);
-        console.log(chord);
+        // console.log(chord);
 
         if (noteBucket[note.time] === chord.length) {
             noteBucket[note.time] = 0;
@@ -137,6 +145,7 @@ const makePlayer = (mid, Tone = ToneJS) => {
         setPartVelocity: (partIndex, velocity) => {
             partVelocity[partIndex] = velocity;
         },
+        setInstrument: instr => { instrument = instr; },
         onPlay: callback => Tone.Transport.on('start', callback),
         onStop: callback => Tone.Transport.on('stop', callback),
         onProgress: callback => playerEmitter.on('progress', callback),
