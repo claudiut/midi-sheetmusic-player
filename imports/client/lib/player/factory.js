@@ -23,21 +23,6 @@ const getUnmutedNotes = chord =>
 
 const createPart = (track, partIndex, { synth, Tone }) => {
     const part = new Tone.Part((time, note) => {
-        // use the midi events / notes to play the synth
-        if (instrument) {
-            instrument.play(note.name, Tone.context.currentTime, {
-                duration: note.duration,
-                gain: partVelocity[partIndex] || note.velocity
-            });
-        } else {
-            synth.triggerAttackRelease(
-                Tone.Frequency(note.name).transpose(0),
-                note.duration,
-                time,
-                partVelocity[partIndex] || note.velocity,
-            );
-        }
-
         noteBucket[note.time] = noteBucket[note.time] || 0;
         noteBucket[note.time] += 1;
         // console.log('>>', note);
@@ -45,10 +30,28 @@ const createPart = (track, partIndex, { synth, Tone }) => {
         // Emit chord event only when chord bucket filled with notes so that
         // we trigger it one time only and then we reset it to be able to trigger it again at replays
         const chord = getUnmutedNotes(chordsOnByTime[note.time]);
-        // console.log(chord);
 
         if (noteBucket[note.time] === chord.length) {
             noteBucket[note.time] = 0;
+
+            if (instrument) {
+                instrument.schedule(Tone.context.currentTime, chord.map(({ note: { name, duration, velocity } }) => ({
+                    time: 0.1,
+                    note: name,
+                    duration,
+                    gain: velocity,
+                })));
+            } else {
+                chord.forEach(({ note: { name, duration, velocity } }) => {
+                    synth.triggerAttackRelease(
+                        Tone.Frequency(name).transpose(0),
+                        duration,
+                        time,
+                        partVelocity[partIndex] || velocity,
+                    );
+                })
+            }
+
             playerEmitter.emit('chordOn', chord);
         }
     }, track.notes);

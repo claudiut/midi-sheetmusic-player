@@ -60,7 +60,7 @@ class Player extends React.Component {
 
         window.player = this.props.player;
     }
-    
+
     setProgress = (percentage, setPlayerProgress = true) => {
         const { player } = this.props;
         const seconds = percentage * player.mid.duration;
@@ -261,6 +261,9 @@ class Player extends React.Component {
                         ))}
                     </div>
                 </div>
+                <center>
+                    <a href="https://github.com/claudiut/midi-sheetmusic-player#licensing" target="_blank">© Licenses Info</a>
+                </center>
             </div>
         );
     }

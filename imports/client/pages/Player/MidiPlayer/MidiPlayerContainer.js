@@ -18,7 +18,7 @@ const loadFileIntoPlayer = lifecycle({
         if (fileUrl) {
             Promise.all([
                 MidiConvert.load(fileUrl),
-                Soundfont.instrument(Tone.context, '/soundfonts/acoustic_grand_piano-mp3_2.js'),
+                Soundfont.instrument(Tone.context, '/soundfonts/acoustic_grand_piano-mp3.js'),
             ]).then(([mid, instrument]) => {
                 const player = makePlayer(mid);
                 player.setInstrument(instrument);
